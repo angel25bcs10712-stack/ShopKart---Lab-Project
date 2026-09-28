@@ -48,8 +48,7 @@ export default function Login() {
       const response = await loginCustomer(formData);
 
       if (response.data.success) {
-        alert('Login successful!');
-        navigate('/home');
+        navigate('/home', { replace: true });
       }
     } catch (error) {
       setServerError(error.response?.data?.message || 'Login failed. Please try again.');

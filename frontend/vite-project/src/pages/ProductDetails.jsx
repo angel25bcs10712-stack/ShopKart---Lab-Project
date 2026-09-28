@@ -90,26 +90,44 @@ export default function ProductDetails() {
     <>
       <Navbar />
       <div className="product-details">
+        <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', fontSize: '14px' }}>
+          <button onClick={() => navigate('/products')} style={{ background: 'none', border: 'none', color: '#4f46e5', cursor: 'pointer', fontWeight: 600 }}>
+            ← Back to Products
+          </button>
+          <span>/</span>
+          <span>{product.category}</span>
+          <span>/</span>
+          <span style={{ color: '#0f172a', fontWeight: 600 }}>{product.name}</span>
+        </div>
+
         <div className="product-detail-card">
-          <img src={product.image} alt={product.name} className="product-detail-image" />
+          <div className="product-detail-image-box">
+            <img src={product.image} alt={product.name} className="product-detail-image" />
+          </div>
 
           <div className="product-detail-info">
-            <p className="product-category">{product.category}</p>
+            <span className="product-category-pill" style={{ position: 'static', display: 'inline-block', marginBottom: '8px' }}>
+              {product.category}
+            </span>
             <h1>{product.name}</h1>
 
             <div className="product-meta">
-              <span className="meta-badge">₹{product.price.toLocaleString()}</span>
-              <span className="meta-badge">{product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}</span>
+              <span className="meta-badge" style={{ fontSize: '20px', padding: '6px 16px' }}>
+                ₹{product.price.toLocaleString()}
+              </span>
+              <span className={`stock-status-pill ${isOutOfStock ? 'out-of-stock' : product.stock <= 5 ? 'low-stock' : 'in-stock'}`} style={{ fontSize: '14px', padding: '6px 12px' }}>
+                {isOutOfStock ? 'Out of Stock' : product.stock <= 5 ? `Only ${product.stock} units left` : `${product.stock} In Stock`}
+              </span>
             </div>
 
-            <p>{product.description}</p>
+            <p className="product-detail-description">{product.description}</p>
 
-            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+            <div style={{ display: 'flex', gap: '14px', marginTop: '24px' }}>
               <button
                 className="add-to-cart-btn"
                 onClick={handleAddToCart}
                 disabled={isAdding || isOutOfStock || isMaxStockReached}
-                style={{ flex: 1 }}
+                style={{ flex: 1, padding: '14px 20px', fontSize: '15px' }}
               >
                 {isAdding
                   ? '⏳ Adding...'
@@ -125,14 +143,14 @@ export default function ProductDetails() {
               <button
                 className="view-btn"
                 onClick={() => navigate('/cart')}
-                style={{ width: 'auto', padding: '10px 18px', background: '#3b82f6' }}
+                style={{ width: 'auto', padding: '14px 24px', background: '#eef2ff', color: '#4f46e5', borderColor: '#c7d2fe', fontSize: '15px' }}
               >
-                Go to Cart →
+                View Cart ({currentQty}) →
               </button>
             </div>
 
-            {cartFeedback.success && <p className="cart-feedback-success">{cartFeedback.success}</p>}
-            {cartFeedback.error && <p className="cart-feedback-error">{cartFeedback.error}</p>}
+            {cartFeedback.success && <p className="cart-feedback-success" style={{ textAlign: 'left', marginTop: '12px' }}>✓ {cartFeedback.success}</p>}
+            {cartFeedback.error && <p className="cart-feedback-error" style={{ textAlign: 'left', marginTop: '12px' }}>⚠️ {cartFeedback.error}</p>}
           </div>
         </div>
       </div>

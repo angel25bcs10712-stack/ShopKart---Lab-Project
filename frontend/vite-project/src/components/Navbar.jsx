@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { getWishlist, logoutCustomer } from '../services/ProductApi';
 import { useCart } from '../context/CartContext';
 import '../styles/navbar.css';
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [wishlistCount, setWishlistCount] = useState(0);
   const { cartCount, clearCart } = useCart();
@@ -47,37 +48,48 @@ export default function Navbar() {
     }
   };
 
-  return (
-    <nav className="navbar">
-      <div className="navbar-container">
-        <Link to="/home" style={{ textDecoration: 'none' }}>
-          <h1 className="navbar-logo">🛒 ShopKart</h1>
-        </Link>
+  const isActive = (path) => location.pathname === path;
 
-        <ul className="nav-menu">
-          <li>
-            <Link to="/home" className="nav-link">Home</Link>
-          </li>
-          <li>
-            <Link to="/products" className="nav-link">Products</Link>
-          </li>
-          <li>
-            <Link to="/wishlist" className="nav-link" aria-label="Wishlist">
-              ♥ Wishlist{wishlistCount > 0 ? ` (${wishlistCount})` : ''}
-            </Link>
-          </li>
-          <li>
-            <Link to="/cart" className="nav-link cart-link" aria-label="Shopping Cart">
-              🛒 Cart{cartCount > 0 ? ` (${cartCount})` : ''}
-            </Link>
-          </li>
-          <li>
-            <button onClick={handleLogout} className="logout-btn" disabled={loading}>
-              {loading ? 'Logging out...' : 'Logout'}
-            </button>
-          </li>
-        </ul>
-      </div>
-    </nav>
+  return (
+    <header className="navbar-header">
+      <nav className="navbar">
+        <div className="navbar-container">
+          <Link to="/home" className="navbar-brand">
+            <span className="brand-icon">🛒</span>
+            <span className="brand-text">Shop<span className="brand-highlight">Kart</span></span>
+          </Link>
+
+          <ul className="nav-menu">
+            <li>
+              <Link to="/home" className={`nav-link ${isActive('/home') ? 'active' : ''}`}>
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link to="/products" className={`nav-link ${isActive('/products') ? 'active' : ''}`}>
+                Products
+              </Link>
+            </li>
+            <li>
+              <Link to="/wishlist" className={`nav-link ${isActive('/wishlist') ? 'active' : ''}`} aria-label="Wishlist">
+                <span>♥ Wishlist</span>
+                {wishlistCount > 0 && <span className="nav-badge wishlist-badge">{wishlistCount}</span>}
+              </Link>
+            </li>
+            <li>
+              <Link to="/cart" className={`nav-link cart-link ${isActive('/cart') ? 'active' : ''}`} aria-label="Shopping Cart">
+                <span>🛒 Cart</span>
+                {cartCount > 0 && <span className="nav-badge cart-badge">{cartCount}</span>}
+              </Link>
+            </li>
+            <li>
+              <button onClick={handleLogout} className="logout-btn" disabled={loading} title="Sign Out">
+                {loading ? 'Logging out...' : 'Logout'}
+              </button>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </header>
   );
 }
