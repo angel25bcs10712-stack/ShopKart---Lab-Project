@@ -1,28 +1,53 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { addToWishlist } from '../services/ProductApi';
+import { useCart } from '../context/CartContext';
 
 export default function ProductCard({ product }) {
   const navigate = useNavigate();
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState('');
+  const { addToCart, getItemQuantity, actionLoading } = useCart();
+
+  const [savingWishlist, setSavingWishlist] = useState(false);
+  const [savedWishlist, setSavedWishlist] = useState(false);
+  const [wishlistError, setWishlistError] = useState('');
+  const [cartFeedback, setCartFeedback] = useState({ error: '', success: '' });
+
+  const currentQty = getItemQuantity(product._id);
+  const isAdding = actionLoading[product._id] === 'adding';
+  const isOutOfStock = product.stock <= 0;
+  const isMaxStockReached = currentQty >= product.stock && product.stock > 0;
 
   const handleWishlistClick = async () => {
-    if (saving || saved) return;
+    if (savingWishlist || savedWishlist) return;
 
-    setSaving(true);
-    setError('');
+    setSavingWishlist(true);
+    setWishlistError('');
 
     try {
       await addToWishlist(product._id);
-      setSaved(true);
+      setSavedWishlist(true);
       window.dispatchEvent(new CustomEvent('wishlist:update'));
     } catch (err) {
       const message = err?.response?.data?.message || 'Unable to save product. Please try again.';
-      setError(message);
+      setWishlistError(message);
     } finally {
-      setSaving(false);
+      setSavingWishlist(false);
+    }
+  };
+
+  const handleAddToCart = async () => {
+    if (isAdding || isOutOfStock || isMaxStockReached) return;
+
+    setCartFeedback({ error: '', success: '' });
+    const res = await addToCart(product._id);
+
+    if (res.success) {
+      setCartFeedback({ error: '', success: 'Added to cart!' });
+      setTimeout(() => {
+        setCartFeedback((prev) => ({ ...prev, success: '' }));
+      }, 2500);
+    } else {
+      setCartFeedback({ error: res.message, success: '' });
     }
   };
 
@@ -34,23 +59,48 @@ export default function ProductCard({ product }) {
         <p className="product-category">{product.category}</p>
         <h3>{product.name}</h3>
         <p className="product-price">₹{product.price.toLocaleString()}</p>
-        <p className="product-stock">{product.stock > 0 ? `${product.stock} units left` : 'Out of stock'}</p>
+        <p className="product-stock">
+          {product.stock > 0 ? `${product.stock} units left` : 'Out of stock'}
+        </p>
 
         <div className="product-actions">
+          {/* Add to Cart button */}
+          <button
+            className={`add-to-cart-btn ${currentQty > 0 ? 'in-cart' : ''}`}
+            onClick={handleAddToCart}
+            disabled={isAdding || isOutOfStock || isMaxStockReached}
+          >
+            {isAdding
+              ? '⏳ Adding...'
+              : isOutOfStock
+              ? 'Out of Stock'
+              : isMaxStockReached
+              ? `Max In Cart (${currentQty})`
+              : currentQty > 0
+              ? `+ Add Another (${currentQty})`
+              : '🛒 Add to Cart'}
+          </button>
+
           <button className="view-btn" onClick={() => navigate(`/products/${product._id}`)}>
             View Details
           </button>
 
           <button
-            className={`wishlist-btn ${saved ? 'saved' : ''}`}
+            className={`wishlist-btn ${savedWishlist ? 'saved' : ''}`}
             onClick={handleWishlistClick}
-            disabled={saving || saved}
+            disabled={savingWishlist || savedWishlist}
           >
-            {saving ? '⏳ Saving...' : saved ? '♥ Added to Wishlist' : '♡ Add to Wishlist'}
+            {savingWishlist
+              ? '⏳ Saving...'
+              : savedWishlist
+              ? '♥ In Wishlist'
+              : '♡ Add to Wishlist'}
           </button>
         </div>
 
-        {error && <p className="wishlist-error">{error}</p>}
+        {cartFeedback.success && <p className="cart-feedback-success">{cartFeedback.success}</p>}
+        {cartFeedback.error && <p className="cart-feedback-error">{cartFeedback.error}</p>}
+        {wishlistError && <p className="wishlist-error">{wishlistError}</p>}
       </div>
     </div>
   );

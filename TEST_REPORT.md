@@ -149,6 +149,55 @@ Expected output:
 
 ---
 
-## ✨ Ready to Test!
+---
 
-All endpoints are functional and frontend components are connected.
+## 🛒 Lab 05 - Shopping Cart System Report
+
+### 1. Data Model Extension
+- **Model**: `Customer` (`backend/models/customer.model.js`)
+- **Cart Field**:
+  ```js
+  cart: [
+    {
+      product: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+        required: true
+      },
+      quantity: {
+        type: Number,
+        default: 1,
+        min: 1
+      }
+    }
+  ]
+  ```
+
+### 2. Implemented Cart Endpoints
+- `POST /cart/:productId`: Adds product (quantity = 1) or increments if already present. Validates stock availability.
+- `GET /cart`: Retrieves authenticated user's cart populated with product details (`name`, `price`, `image`, `stock`, `category`).
+- `PATCH /cart/:productId`: Updates quantity (validates min 1 and `<= stock`).
+- `DELETE /cart/:productId`: Removes product from cart.
+
+### 3. Verification Test Results (9/9 Passed)
+- ✅ Unauthenticated request to `/cart` returned `401 Unauthorized`
+- ✅ `POST /cart/:productId` for new product returned `200` with `quantity: 1`
+- ✅ `POST /cart/:productId` re-add returned `200` with `quantity: 2` (prevented duplicates)
+- ✅ `GET /cart` returned populated product objects with `name`, `price`, and `stock`
+- ✅ `PATCH /cart/:productId` updated quantity to 3
+- ✅ `PATCH /cart/:productId` with excess quantity returned `400 Bad Request` ("Quantity exceeds available stock")
+- ✅ `PATCH /cart/:productId` with quantity 0 returned `400 Bad Request` ("Quantity must be at least 1")
+- ✅ `DELETE /cart/:productId` removed item and returned updated cart
+- ✅ Second `DELETE /cart/:productId` returned `404 Not Found`
+
+### 4. Frontend State & UI Features
+- **Global State**: `CartContext.jsx` with `useCart()` providing `cartItems`, `cartCount`, `subtotal`, `actionLoading`, and CRUD operations.
+- **Navbar**: Dynamic `Cart (count)` badge in real time without page reload.
+- **Product Card**: "Add to Cart", "Add Another (qty)", "Max In Cart", "Out of Stock" states with optimistic feedback.
+- **Product Details**: Direct "Add to Cart" and "Go to Cart" button actions with live feedback.
+- **Cart Page (`/cart`)**:
+  - Quantity controls (`[-] qty [+]`) with stock boundary checking
+  - Remove button with per-item action loading
+  - Responsive Order Summary card with dynamic subtotal and items count
+  - Loading, empty, and error states
+

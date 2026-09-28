@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getWishlist, logoutCustomer } from '../services/ProductApi';
+import { useCart } from '../context/CartContext';
 import '../styles/navbar.css';
 
 export default function Navbar() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [wishlistCount, setWishlistCount] = useState(0);
+  const { cartCount, clearCart } = useCart();
 
   useEffect(() => {
     const fetchWishlistCount = async () => {
@@ -36,6 +38,7 @@ export default function Navbar() {
 
     try {
       await logoutCustomer();
+      clearCart();
       navigate('/login');
     } catch {
       alert('Error logging out. Please try again.');
@@ -47,7 +50,9 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <h1 className="navbar-logo">🛒 ShopKart</h1>
+        <Link to="/home" style={{ textDecoration: 'none' }}>
+          <h1 className="navbar-logo">🛒 ShopKart</h1>
+        </Link>
 
         <ul className="nav-menu">
           <li>
@@ -59,6 +64,11 @@ export default function Navbar() {
           <li>
             <Link to="/wishlist" className="nav-link" aria-label="Wishlist">
               ♥ Wishlist{wishlistCount > 0 ? ` (${wishlistCount})` : ''}
+            </Link>
+          </li>
+          <li>
+            <Link to="/cart" className="nav-link cart-link" aria-label="Shopping Cart">
+              🛒 Cart{cartCount > 0 ? ` (${cartCount})` : ''}
             </Link>
           </li>
           <li>

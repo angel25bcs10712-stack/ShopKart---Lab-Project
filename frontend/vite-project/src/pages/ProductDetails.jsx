@@ -1,14 +1,23 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { getProductById } from '../services/ProductApi';
+import { useCart } from '../context/CartContext';
 import '../styles/products.css';
 
 export default function ProductDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { addToCart, getItemQuantity, actionLoading } = useCart();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [cartFeedback, setCartFeedback] = useState({ error: '', success: '' });
+
+  const currentQty = product ? getItemQuantity(product._id) : 0;
+  const isAdding = product ? actionLoading[product._id] === 'adding' : false;
+  const isOutOfStock = product?.stock <= 0;
+  const isMaxStockReached = product && currentQty >= product.stock && product.stock > 0;
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -28,12 +37,28 @@ export default function ProductDetails() {
     fetchProduct();
   }, [id]);
 
+  const handleAddToCart = async () => {
+    if (!product || isAdding || isOutOfStock || isMaxStockReached) return;
+
+    setCartFeedback({ error: '', success: '' });
+    const res = await addToCart(product._id);
+
+    if (res.success) {
+      setCartFeedback({ error: '', success: 'Added to cart!' });
+      setTimeout(() => {
+        setCartFeedback((prev) => ({ ...prev, success: '' }));
+      }, 2500);
+    } else {
+      setCartFeedback({ error: res.message, success: '' });
+    }
+  };
+
   if (loading) {
     return (
       <>
         <Navbar />
         <div className="product-details">
-          <div className="loading-state">Loading products...</div>
+          <div className="loading-state">Loading product details...</div>
         </div>
       </>
     );
@@ -55,7 +80,7 @@ export default function ProductDetails() {
       <>
         <Navbar />
         <div className="product-details">
-          <div className="empty-state">No products found.</div>
+          <div className="empty-state">No product found.</div>
         </div>
       </>
     );
@@ -78,7 +103,36 @@ export default function ProductDetails() {
             </div>
 
             <p>{product.description}</p>
-            <button className="add-to-cart-btn">Add to Cart</button>
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+              <button
+                className="add-to-cart-btn"
+                onClick={handleAddToCart}
+                disabled={isAdding || isOutOfStock || isMaxStockReached}
+                style={{ flex: 1 }}
+              >
+                {isAdding
+                  ? '⏳ Adding...'
+                  : isOutOfStock
+                  ? 'Out of Stock'
+                  : isMaxStockReached
+                  ? `Max Stock In Cart (${currentQty})`
+                  : currentQty > 0
+                  ? `+ Add Another (${currentQty})`
+                  : '🛒 Add to Cart'}
+              </button>
+
+              <button
+                className="view-btn"
+                onClick={() => navigate('/cart')}
+                style={{ width: 'auto', padding: '10px 18px', background: '#3b82f6' }}
+              >
+                Go to Cart →
+              </button>
+            </div>
+
+            {cartFeedback.success && <p className="cart-feedback-success">{cartFeedback.success}</p>}
+            {cartFeedback.error && <p className="cart-feedback-error">{cartFeedback.error}</p>}
           </div>
         </div>
       </div>
