@@ -89,6 +89,16 @@ export default function ProductCard({ product }) {
         <div className="product-card-footer">
           <button
             type="button"
+            className={`wishlist-btn-card ${savedWishlist ? 'saved' : ''}`}
+            onClick={handleWishlistClick}
+            disabled={savingWishlist || savedWishlist}
+            title={savedWishlist ? 'Already in wishlist' : 'Save to wishlist'}
+          >
+            {savingWishlist ? '⌛' : savedWishlist ? '❤️ In Wishlist' : '♡ Add to Wishlist'}
+          </button>
+
+          <button
+            type="button"
             className={`add-to-cart-btn ${currentQty > 0 ? 'in-cart' : ''}`}
             onClick={handleAddToCart}
             disabled={isAdding || isOutOfStock || isMaxStockReached}
@@ -102,16 +112,6 @@ export default function ProductCard({ product }) {
               : currentQty > 0
               ? `+ Add Another (${currentQty})`
               : '🛒 Add to Cart'}
-          </button>
-
-          <button
-            type="button"
-            className={`wishlist-btn-card ${savedWishlist ? 'saved' : ''}`}
-            onClick={handleWishlistClick}
-            disabled={savingWishlist || savedWishlist}
-            title={savedWishlist ? 'Already in wishlist' : 'Save to wishlist'}
-          >
-            {savingWishlist ? '⌛' : savedWishlist ? '❤️' : '♡ Wishlist'}
           </button>
         </div>
 
