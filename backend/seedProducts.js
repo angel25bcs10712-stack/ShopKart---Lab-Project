@@ -21,7 +21,7 @@ const fetchFakeStoreProducts = async () => {
   return products.map((product) => ({
     name: product.title,
     description: product.description,
-    price: Math.round(product.price * 100),
+    price: product.price,
     category: product.category,
     image: product.image,
     stock: Math.max(5, Math.min(50, Math.round(product.price * 5)))

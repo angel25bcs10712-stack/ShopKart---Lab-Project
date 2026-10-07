@@ -46,9 +46,13 @@ export const registerCustomer = async (req, res) => {
         phone: customer.phone
       }
     });
-  } catch {
-    return res.status(500).json({ success: false, message: "Server error" });
-  }
+  } catch (error) {
+    console.error("REGISTER ERROR:", error);
+    return res.status(500).json({
+        success: false,
+        message: error.message
+    });
+}
 };
 
 export const loginCustomer = async (req, res) => {

@@ -103,7 +103,7 @@ export default function Cart() {
                 <button
                   type="button"
                   className="checkout-btn"
-                  onClick={() => alert('Proceeding to Checkout! Lab-06 will integrate the complete Checkout flow.')}
+                  onClick={() => navigate('/checkout')}
                 >
                   Proceed to Checkout →
                 </button>
